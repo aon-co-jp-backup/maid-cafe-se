@@ -89,7 +89,7 @@ async fn read_json<T: serde::de::DeserializeOwned>(req: Request) -> Result<T, Re
         }
         Err(_) => return Err(err(StatusCode::BAD_REQUEST, "本文を読めません")),
     };
-    serde_json::from_slice(&bytes).map_err(|e| err(StatusCode::BAD_REQUEST, &format!("JSONが不正です: {e}")))
+    sonic_rs::from_slice(&bytes).map_err(|e| err(StatusCode::BAD_REQUEST, &format!("JSONが不正です: {e}")))
 }
 
 fn style_key(s: VoiceStyle) -> &'static str {

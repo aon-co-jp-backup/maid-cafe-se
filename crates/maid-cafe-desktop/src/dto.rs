@@ -228,7 +228,7 @@ mod tests {
         let back: AlarmDto = serde_json::from_value(json).unwrap();
         assert_eq!(sample(), back);
         // 省略できる項目(enabled等)には既定値が入る
-        let minimal: AlarmDto = serde_json::from_str(
+        let minimal: AlarmDto = sonic_rs::from_str(
             r#"{"id":"x","label":"","time":"06:00","recurrence":{"kind":"daily"},"kind":"SOUND","voice":"MAID"}"#,
         )
         .unwrap();

@@ -16,6 +16,7 @@ name = "maid-cafe-se"
 path = "src/main.rs"
 
 [dependencies]
+sonic-rs = "0.3"
 http-body-util = "0.1"
 bytes = "1.12.1"
 hyper = "1"
