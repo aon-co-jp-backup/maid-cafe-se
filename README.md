@@ -107,3 +107,7 @@ Rustのビルドには、兄弟ディレクトリに`RPoem`(`F:\RPoem`)が必要
 ## 関連
 
 - エコシステム索引: [aon-co-jp/runo](https://github.com/aon-co-jp/runo)
+
+---
+
+作者 / Author: 石塚正浩（MASAHIRO ISHIZUKA） (https://github.com/aon-co-jp)
