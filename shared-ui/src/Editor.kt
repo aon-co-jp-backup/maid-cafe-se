@@ -13,6 +13,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -26,6 +27,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -68,7 +71,7 @@ private fun DayChips(selected: Set<DayOfWeek>, onChange: (Set<DayOfWeek>) -> Uni
 }
 
 @Composable
-private fun <T> Choice(items: List<T>, selected: T, label: (T) -> String, onPick: (T) -> Unit) {
+fun <T> Choice(items: List<T>, selected: T, label: (T) -> String, onPick: (T) -> Unit) {
     Column {
         items.chunked(2).forEach { row ->
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -77,6 +80,40 @@ private fun <T> Choice(items: List<T>, selected: T, label: (T) -> String, onPick
                     Text(label(item), Modifier.padding(end = 8.dp))
                 }
             }
+        }
+    }
+}
+
+/**
+ * マイセリフ(自分で書いて保存した目覚ましセリフ)。チェックで「読み上げる文章」に加え、外すと取り除く。
+ * 新しく書いて保存・書き換え・削除ができる。入力した文章は翻訳しない。
+ */
+@Composable
+fun MyPhrasePicker(text: String, onText: (String) -> Unit) {
+    val ctx = LocalContext.current
+    val phrases = remember { mutableStateListOf<String>().apply { addAll(Store.myPhrases(ctx)) } }
+    var draft by remember { mutableStateOf("") }
+    var editingIndex by remember { mutableStateOf(-1) }
+    fun persist() = Store.saveMyPhrases(ctx, phrases.toList())
+    Column {
+        phrases.forEachIndexed { i, ph ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = ph in text,
+                    onCheckedChange = { on -> onText(if (on) (text + " " + ph).trim() else text.replace(ph, "").replace("  ", " ").trim()) },
+                )
+                Text(ph, Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                TextButton(onClick = { editingIndex = i; draft = ph }) { Text("編集") }
+                TextButton(onClick = { phrases.removeAt(i); persist(); if (editingIndex == i) { editingIndex = -1; draft = "" } }) { Text("削除") }
+            }
+        }
+        OutlinedTextField(draft, { draft = it }, label = { Text(if (editingIndex >= 0) "セリフを書き換え" else "新しいセリフを書く") }, modifier = Modifier.fillMaxWidth())
+        Row {
+            OutlinedButton(enabled = draft.isNotBlank(), onClick = {
+                if (editingIndex in phrases.indices) phrases[editingIndex] = draft.trim() else phrases.add(draft.trim())
+                persist(); draft = ""; editingIndex = -1
+            }) { Text(if (editingIndex >= 0) "書き換えを保存" else "保存") }
+            if (editingIndex >= 0) TextButton(onClick = { editingIndex = -1; draft = "" }) { Text("やめる") }
         }
     }
 }
@@ -171,6 +208,8 @@ fun EditorDialog(
                 }
                 if (kind == AlarmKind.SPEECH) {
                     OutlinedTextField(text, { text = it }, label = { Text("読み上げる文章") }, modifier = Modifier.fillMaxWidth())
+                    Text("マイセリフ(自分で書いて保存。チェックで目覚ましに使う)")
+                    MyPhrasePicker(text) { text = it }
                 }
                 Text("声")
                 VoicePicker(voice) { voice = it }

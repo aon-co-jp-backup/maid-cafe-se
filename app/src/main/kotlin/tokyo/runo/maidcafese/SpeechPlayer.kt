@@ -42,6 +42,21 @@ class SpeechPlayer(
     private var track: AudioTrack? = null
     private var stopped = false
     private var voiceWait = 0
+    /** 実際に読み上げに使う言語コード(端末に無い言語は代わりの言語になる)。 */
+    private var effective = "ja"
+
+    private fun usable(r: Int) = r != TextToSpeech.LANG_MISSING_DATA && r != TextToSpeech.LANG_NOT_SUPPORTED
+
+    /** [lang]の音声が使えればそのコード、使えなければ代わりの言語のコード、どれも無ければnull。 */
+    private fun effectiveLang(engine: TextToSpeech, lang: String): String? {
+        if (usable(engine.setLanguage(Langs.byCode(lang).locale))) return lang
+        if (lang == "fa") {
+            if (usable(engine.setLanguage(Locale("fa")))) return "fa"
+            Log.w(TAG, "Persian TTS missing, falling back to Arabic voice")
+            if (usable(engine.setLanguage(Locale("ar")))) return "ar"
+        }
+        return null
+    }
 
     fun start(list: List<Occurrence>) {
         items = list
@@ -104,12 +119,14 @@ class SpeechPlayer(
         if (index >= items.size) { onFinished(); return }
         val item = items[index]
         val engine = tts ?: return
-        val r = engine.setLanguage(Langs.byCode(item.lang).locale)
-        if (r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED) {
+        // 端末にその言語の音声が無いと無言(音だけ)になるので、近い言語を順に試す(ペルシャ語→アラビア語。文字が同じ系統で、端末に有ることが多い)
+        val spokenLang = effectiveLang(engine, item.lang)
+        if (spokenLang == null) {
             onUnavailable("その言語(${Langs.byCode(item.lang).name})の音声データがありません"); return
         }
+        effective = spokenLang
         // 起動直後は、エンジンの音声の一覧がまだ空のことがある(1回目だけ、選んだ声ではなく既定の声で鳴る原因)。一覧が出るまで少し待つ(最大3秒)
-        if (Voices.voicesFor(engine, item.lang).isEmpty() && voiceWait < 10) {
+        if (Voices.hasVoice(engine, effective).not() && voiceWait < 10) {
             voiceWait++
             main.postDelayed({ next() }, 300)
             return
@@ -124,7 +141,7 @@ class SpeechPlayer(
         if (stopped) return
         val engine = tts ?: return
         val item = items[index]
-        val (_, baseRate) = Voices.prepare(engine, item.voice, Store.voiceName(ctx, item.voice), neutralPitch = true, lang = item.lang)
+        val (_, baseRate) = Voices.prepare(engine, item.voice, Store.voiceName(ctx, item.voice), neutralPitch = true, lang = effective)
         engine.setSpeechRate((baseRate * segs[k].rate).coerceIn(0.5f, 2.0f))
         val file = File(ctx.cacheDir, "tts_${index}_$k.wav")
         val res = engine.synthesizeToFile(segs[k].text, Bundle(), file, "syn${index}_$k")
@@ -205,7 +222,7 @@ class SpeechPlayer(
         Log.w(TAG, "fallback to direct speech: $reason")
         val engine = tts ?: return
         val item = items[i]
-        val (pitch, rate) = Voices.prepare(engine, item.voice, Store.voiceName(ctx, item.voice), neutralPitch = false, lang = item.lang)
+        val (pitch, rate) = Voices.prepare(engine, item.voice, Store.voiceName(ctx, item.voice), neutralPitch = false, lang = effective)
         engine.setPitch(pitch)
         engine.setSpeechRate(rate)
         engine.speak(item.speech.orEmpty(), TextToSpeech.QUEUE_FLUSH, null, "spk$i")
@@ -220,10 +237,22 @@ object Voices {
     /** 端末にある日本語の音声(オフラインで使えるもののみ)。 */
     fun japaneseVoices(tts: TextToSpeech?) = voicesFor(tts, "ja")
 
+    /** その言語の音声が(ネット接続前提のものを含め)1つでもあるか。 */
+    fun hasVoice(tts: TextToSpeech?, lang: String) = candidatesFor(tts, lang).isNotEmpty()
+
     /** 端末にある、その言語(`ja` `en`など)の音声(オフラインで使えるもののみ)。 */
     fun voicesFor(tts: TextToSpeech?, lang: String) =
         runCatching { tts?.voices?.filter { it.locale.language == lang && !it.isNetworkConnectionRequired } }
             .getOrNull().orEmpty().sortedBy { it.name }
+
+    /**
+     * 声の選択用。オフラインの音声が無い言語(ドイツ語など、端末にネット接続前提の音声しか無い場合)は、
+     * 空にして前の言語(日本語)の声のまま読んでしまうと「おかしな声」になるので、ネット接続前提の音声も候補に入れる。
+     */
+    private fun candidatesFor(tts: TextToSpeech?, lang: String) =
+        voicesFor(tts, lang).ifEmpty {
+            runCatching { tts?.voices?.filter { it.locale.language == lang } }.getOrNull().orEmpty().sortedBy { it.name }
+        }
 
     fun genderOfName(name: String): SourceGender {
         val n = name.lowercase()
@@ -240,7 +269,7 @@ object Voices {
      */
     fun prepare(tts: TextToSpeech, style: VoiceStyle, preferredName: String?, neutralPitch: Boolean, lang: String = "ja"): Pair<Float, Float> {
         // 声の元の指定(設定)は日本語の音声のものなので、日本語のときだけ使う
-        val ja = voicesFor(tts, lang)
+        val ja = candidatesFor(tts, lang)
         val preferredName = if (lang == "ja") preferredName else null
         val want = if (style == VoiceStyle.MAID) SourceGender.FEMALE else SourceGender.MALE
         // 性別の手がかりが名前に無い音声(en-us-x-tpf-local など)も多いので、最後は「その言語の最初の音声」を必ず選ぶ。

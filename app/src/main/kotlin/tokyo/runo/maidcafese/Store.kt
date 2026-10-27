@@ -16,6 +16,15 @@ object Store {
         prefs(ctx).edit().putString("entries", Codec.encodeAll(list)).apply()
     }
 
+    /** 自分で書いて保存した目覚ましセリフ(マイセリフ)。1行に1件(改行はURLエンコードで保つ)。 */
+    fun myPhrases(ctx: Context): List<String> =
+        (prefs(ctx).getString("my_phrases", "") ?: "").lines().filter { it.isNotBlank() }
+            .map { java.net.URLDecoder.decode(it, "UTF-8") }
+
+    fun saveMyPhrases(ctx: Context, list: List<String>) {
+        prefs(ctx).edit().putString("my_phrases", list.filter { it.isNotBlank() }.joinToString("\n") { java.net.URLEncoder.encode(it, "UTF-8") }).apply()
+    }
+
     /** ユーザーが指定した端末TTS音声名(声質ごと)。未指定はnull=自動選択。 */
     fun voiceName(ctx: Context, style: VoiceStyle): String? = prefs(ctx).getString("voice_${style.name}", null)
 

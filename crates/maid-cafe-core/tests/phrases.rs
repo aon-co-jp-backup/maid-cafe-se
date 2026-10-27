@@ -33,7 +33,7 @@ fn t0() -> chrono::NaiveDateTime {
 #[test]
 fn catalog_has_the_requested_phrases() {
     let display: Vec<&str> = PHRASES.iter().map(|p| p.display).collect();
-    assert!(display.contains(&"おかえりなさいませご主人様！"));
+    assert!(display.contains(&"お帰りなさいませご主人様！"));
     assert!(display.contains(&"おいしくな～れ萌え萌えキュ～ン"));
     assert!(display.iter().any(|d| d.starts_with("メッ！ダメなんだぞこら！") && d.ends_with("頑張って行きましょう！")));
     assert!(display.contains(&"ファイト！ファイト！"));
@@ -41,7 +41,7 @@ fn catalog_has_the_requested_phrases() {
     assert!(display.contains(&"パーフェクト！"));
     assert!(display.contains(&"ご主人さま～、お～き～て～。今日も頑張って～"));
     let ids: std::collections::HashSet<&str> = PHRASES.iter().map(|p| p.id).collect();
-    assert_eq!(7, ids.len());
+    assert_eq!(30, ids.len());
 }
 
 #[test]

@@ -22,6 +22,8 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -36,6 +38,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +48,13 @@ import androidx.compose.ui.unit.dp
 import tokyo.runo.maidcafese.core.AlarmEntry
 import tokyo.runo.maidcafese.core.Codec
 import tokyo.runo.maidcafese.core.AlarmKind
+import tokyo.runo.maidcafese.core.Langs
+import tokyo.runo.maidcafese.core.Recurrence
+import tokyo.runo.maidcafese.core.Schedule
+import java.time.LocalTime
+import java.util.UUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import tokyo.runo.maidcafese.core.CalendarSettings
 import tokyo.runo.maidcafese.core.SpeechText
 import tokyo.runo.maidcafese.core.VoiceStyle
@@ -92,6 +104,18 @@ fun App() {
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= 33) notifPerm.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
+    // 起動のたびに最新版を確認し、新しい版があれば取得してインストール画面を開く(最終確認は端末の画面)
+    var updateStatus by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        val r = withContext(Dispatchers.IO) { Updater.checkAndUpdate(ctx) }
+        updateStatus = when (r) {
+            is Updater.Result.Launched ->
+                if (r.needsPermission) "新しい版 ${r.version} があります。「このアプリからのインストールを許可」をオンにして戻ってください"
+                else "新しい版 ${r.version} をダウンロードしました。インストール画面で「更新」を押してください"
+            is Updater.Result.Failed -> null
+            Updater.Result.UpToDate -> null
+        }
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("maid-cafe-se 秘書") }) },
@@ -101,6 +125,16 @@ fun App() {
             Modifier.padding(pad).padding(horizontal = 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            updateStatus?.let { msg -> item { Text(msg, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary) } }
+            item {
+                QuickSpeakCard(
+                    onSpeak = { text, lang -> startTestPlayback(ctx, AlarmEntry("quick", "読み上げ", Schedule(Recurrence.Daily, LocalTime.of(0, 0)), AlarmKind.SPEECH, text = text, lang = lang)) },
+                    onSavePhrase = { Store.saveMyPhrases(ctx, Store.myPhrases(ctx) + it) },
+                    onMakeAlarm = { text, lang ->
+                        editing = AlarmEntry(UUID.randomUUID().toString(), text.take(12), Schedule(Recurrence.Daily, LocalTime.of(7, 0)), AlarmKind.SPEECH, text = text, lang = lang)
+                    },
+                )
+            }
             item {
                 Text("次の予定: " + (preview ?: "なし"), style = MaterialTheme.typography.titleSmall)
             }
@@ -144,6 +178,28 @@ fun App() {
             },
             onTest = { startTestPlayback(ctx, it) },
         )
+    }
+}
+
+/** その場で入力した文章を読み上げる。そのまま目覚まし(声でアラーム)にもできる。入力した文章は翻訳しない。 */
+@Composable
+fun QuickSpeakCard(onSpeak: (String, String) -> Unit, onMakeAlarm: (String, String) -> Unit, onSavePhrase: (String) -> Unit) {
+    var text by remember { mutableStateOf("") }
+    var lang by remember { mutableStateOf(Langs.DEFAULT) }
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp)) {
+            Text("その場で読み上げ・目覚まし", style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(text, { text = it }, label = { Text("読み上げる文章") }, modifier = Modifier.fillMaxWidth())
+            Choice(Langs.all, Langs.byCode(lang), { it.name + " (" + it.english + ")" }) { lang = it.code }
+            Spacer(Modifier.height(6.dp))
+            Row {
+                OutlinedButton(enabled = text.isNotBlank(), onClick = { onSpeak(text, lang) }) { Text("いま読み上げ") }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(enabled = text.isNotBlank(), onClick = { onMakeAlarm(text, lang) }) { Text("目覚ましにする") }
+                Spacer(Modifier.width(8.dp))
+                OutlinedButton(enabled = text.isNotBlank(), onClick = { onSavePhrase(text.trim()) }) { Text("マイセリフに保存") }
+            }
+        }
     }
 }
 

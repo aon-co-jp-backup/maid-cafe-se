@@ -29,14 +29,14 @@ class MaidPhrasesTest {
 
     @Test fun catalogHasTheRequestedPhrases() {
         val display = MaidPhrases.all.map { it.display }
-        assertTrue("おかえりなさいませご主人様！" in display)
+        assertTrue("お帰りなさいませご主人様！" in display)
         assertTrue("おいしくな～れ萌え萌えキュ～ン" in display)
         assertTrue(display.any { it.startsWith("メッ！ダメなんだぞこら！") && it.endsWith("頑張って行きましょう！") })
         assertTrue("ファイト！ファイト！" in display)
         assertTrue("エクセレント！" in display)
         assertTrue("パーフェクト！" in display)
         assertTrue("ご主人さま～、お～き～て～。今日も頑張って～" in display)
-        assertEquals(7, MaidPhrases.all.map { it.id }.toSet().size)
+        assertEquals(30, MaidPhrases.all.map { it.id }.toSet().size)
     }
 
     @Test fun singlePhraseAppendedAfterMessage() {

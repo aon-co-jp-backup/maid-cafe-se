@@ -163,7 +163,7 @@ pub struct Phrase {
 }
 
 /// メイドのセリフ集(画面の並びはこの順)。
-pub const PHRASES: [Phrase; 7] = [
+pub const PHRASES: [Phrase; 30] = [
     // 目覚まし用。喋る順は、ユーザーが付けた番号で決まる。
     Phrase {
         id: "okite",
@@ -175,7 +175,7 @@ pub const PHRASES: [Phrase; 7] = [
     },
     Phrase {
         id: "okaeri",
-        display: "おかえりなさいませご主人様！",
+        display: "お帰りなさいませご主人様！",
         spoken: "おかえりなさいませ、ご主人様！",
         pitch: 1.0,
         rate: 0.95,
@@ -200,6 +200,29 @@ pub const PHRASES: [Phrase; 7] = [
     Phrase { id: "fight", display: "ファイト！ファイト！", spoken: "ファイト！ファイト！", pitch: 1.05, rate: 1.1, gap_ms: 250 },
     Phrase { id: "excellent", display: "エクセレント！", spoken: "エクセレント！", pitch: 1.05, rate: 1.0, gap_ms: 300 },
     Phrase { id: "perfect", display: "パーフェクト！", spoken: "パーフェクト！", pitch: 1.05, rate: 1.0, gap_ms: 300 },
+    Phrase { id: "kusuri", display: "おくすりのお時間ですよ", spoken: "おくすりの、お時間ですよ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "megusuri", display: "目薬のお時間よ", spoken: "めぐすりの、お時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "gomi", display: "ゴミ出しのお時間よ", spoken: "ごみだしの、お時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "sentaku", display: "洗濯のお時間よ", spoken: "せんたくの、お時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "torikomi", display: "洗濯物を取り込むお時間よ", spoken: "せんたくものを、とりこむ、お時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "okuri", display: "子供を送る時間よ", spoken: "こどもを、おくる、時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "mukae", display: "子供を迎えに行く時間よ", spoken: "こどもを、むかえに、行く時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "shippu", display: "湿布のお時間よ", spoken: "しっぷの、お時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "chusha", display: "お注射の時間よ", spoken: "おちゅうしゃの、時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "patrol", display: "パトロールのお時間よ", spoken: "ぱとろーるの、お時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "kaigi", display: "会議のお時間よ", spoken: "かいぎの、お時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "uchiawase", display: "打ち合わせのお時間よ", spoken: "うちあわせの、お時間よ", pitch: 1.03, rate: 0.95, gap_ms: 350 },
+    Phrase { id: "omutsu", display: "オムツの交換の時間よ", spoken: "おむつの、こうかんの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "milk", display: "ミルクの時間よ", spoken: "みるくの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "ryouri", display: "お料理の時間よ", spoken: "おりょうりの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "shokuji", display: "お食事の時間よ", spoken: "おしょくじの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "haizen", display: "配膳の時間よ", spoken: "はいぜんの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "sagezen", display: "下げ膳の時間よ", spoken: "さげぜんの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "sentakuki", display: "洗濯機の時間よ", spoken: "せんたくきの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "hosu", display: "洗濯物を干す時間よ", spoken: "せんたくものを、ほす、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "okashi", display: "お菓子の時間よ", spoken: "おかしの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "itterassyai", display: "いってらっしゃいませご主人様", spoken: "いってらっしゃいませ、ご主人様！", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "ofuro", display: "お風呂になさいますか？それとも私になさいますか？", spoken: "おふろに、なさいますか？ それとも、わたしに、なさいますか？", pitch: 1.05, rate: 0.92, gap_ms: 350 },
 ];
 
 /// メイドのセリフの検索と、**喋る順の番号**の操作。

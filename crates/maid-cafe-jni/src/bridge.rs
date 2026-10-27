@@ -158,6 +158,11 @@ pub fn wav_sample_rate(wav: &[u8]) -> i32 {
     parse_wav(wav).map(|p| p.sample_rate as i32).unwrap_or(0)
 }
 
+/// メイドカフェ風の上乗せ(標準のメイドの声への倍率)。極端にすると「怪物声」になるので控えめに。
+const MAID_CAFE_PITCH: f64 = 1.10;
+const MAID_CAFE_FORMANT: f64 = 1.07;
+const MAID_CAFE_BRIGHT_DB: f64 = 3.0;
+
 /// 1区切り分のTTS出力(WAV)を、声質に合わせて加工する。読めない・短すぎる(0.05秒未満)ときは`None`。
 pub fn render_segment(wav: &[u8], voice: &str, source_gender: &str, harmony: bool, pitch: f64) -> Option<Vec<f32>> {
     let pcm = parse_wav(wav)?;
@@ -165,6 +170,15 @@ pub fn render_segment(wav: &[u8], voice: &str, source_gender: &str, harmony: boo
         return None;
     }
     let style = VoiceStyle::from_name(voice)?;
+    // メイドの声は、共有クレートの標準よりさらにメイドカフェ風(高く、明るく、細く)にする。他の声質は標準のまま
+    if style == VoiceStyle::Maid {
+        let src = dsp::refine_gender(&pcm.samples, pcm.sample_rate, gender(source_gender));
+        let mut r = maid_cafe_core::audio::recipe(style, src);
+        r.pitch_ratio *= MAID_CAFE_PITCH;
+        r.formant_ratio *= MAID_CAFE_FORMANT;
+        r.high_shelf_db += MAID_CAFE_BRIGHT_DB;
+        return Some(dsp::render_with_recipe(&pcm, r, harmony, pitch, maid_cafe_core::audio::Mode::FormantIndependent).samples);
+    }
     Some(render(&pcm, style, gender(source_gender), harmony, pitch).samples)
 }
 

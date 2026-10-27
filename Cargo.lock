@@ -2792,6 +2792,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "open-runo-openapi"
+version = "0.1.0"
+dependencies = [
+ "schemars",
+ "serde_json",
+]
+
+[[package]]
 name = "open-runo-persisted-queries"
 version = "0.1.0"
 dependencies = [
@@ -2813,6 +2821,7 @@ dependencies = [
  "http-body-util",
  "hyper",
  "hyper-util",
+ "open-runo-openapi",
  "open-runo-router",
  "serde",
  "serde_json",
@@ -2830,6 +2839,7 @@ dependencies = [
  "flate2",
  "futures",
  "hex",
+ "hmac",
  "http-body-util",
  "hyper",
  "hyper-util",
@@ -2844,6 +2854,7 @@ dependencies = [
  "open-runo-federation",
  "open-runo-history",
  "open-runo-observability",
+ "open-runo-openapi",
  "open-runo-persisted-queries",
  "open-runo-schema-registry",
  "open-runo-scim",
