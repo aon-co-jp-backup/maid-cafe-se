@@ -37,7 +37,7 @@ fn idx(code: &str) -> usize {
 
 /// 固定セリフの、その言語での読み上げ文。`ja`は`MaidPhrases`側(長音などTTS向けの表記)を使うので、ここは日本語以外。
 /// 並びは`LANGS`と同じ(ja, en, zh, ko, it, fr, de, ru, fa, ar)。日本語の位置は空。
-const PHRASES: [(&str, [&str; 10]); 30] = [
+const PHRASES: [(&str, [&str; 10]); 44] = [
     (
         "okite",
         [
@@ -212,6 +212,62 @@ const PHRASES: [(&str, [&str; 10]); 30] = [
     (
         "ofuro",
         ["", "Would you like a bath? Or would you like me?", "要先洗澡吗？还是先选我呢？", "목욕하시겠어요? 아니면 저로 하시겠어요?", "Vuole fare il bagno? Oppure preferisce me?", "Voulez-vous un bain ? Ou plutôt moi ?", "Möchten Sie ein Bad? Oder lieber mich?", "Хотите ванну? Или меня?", "حمام می‌خواهید؟ یا من را؟", "هل تريد الاستحمام؟ أم تريدني؟"],
+    ),
+    (
+        "itadakimasu",
+        ["", "It's time for \"Itadakimasu\" before we eat.", "该说“我开动了”的时间啦。", "“잘 먹겠습니다” 할 시간이에요.", "È ora di dire «Itadakimasu» prima di mangiare.", "C'est l'heure de dire « Itadakimasu » avant de manger.", "Es ist Zeit für das „Itadakimasu“ vor dem Essen.", "Пора сказать «Итадакимас» перед едой.", "وقت گفتن «ایتاداکیماس» پیش از غذا است.", "حان وقت قول «إيتاداكيماس» قبل الطعام."],
+    ),
+    (
+        "katsucurry",
+        ["", "I want to eat delicious katsu curry~", "好想吃美味的炸猪排咖喱饭～", "맛있는 돈가스 카레가 먹고 싶어요~", "Voglio mangiare un buon curry con cotoletta~", "J'ai envie d'un délicieux curry katsu~", "Ich möchte ein leckeres Katsu-Curry essen~", "Хочу вкусное карри с кацу~", "دلم کاری کاتسوی خوشمزه می‌خواهد~", "أريد أن آكل كاري الكاتسو اللذيذ~"],
+    ),
+    (
+        "kakifurai",
+        ["", "I want to eat delicious fried oyster curry~", "好想吃美味的炸牡蛎咖喱饭～", "맛있는 굴튀김 카레가 먹고 싶어요~", "Voglio mangiare un buon curry con ostriche fritte~", "J'ai envie d'un délicieux curry aux huîtres frites~", "Ich möchte ein leckeres Curry mit frittierten Austern essen~", "Хочу вкусное карри с жареными устрицами~", "دلم کاری صدف سرخ‌شده خوشمزه می‌خواهد~", "أريد أن آكل كاري المحار المقلي اللذيذ~"],
+    ),
+    (
+        "ramen",
+        ["", "I want to eat delicious ramen~", "好想吃美味的拉面～", "맛있는 라멘이 먹고 싶어요~", "Voglio mangiare un buon ramen~", "J'ai envie d'un délicieux ramen~", "Ich möchte leckeres Ramen essen~", "Хочу вкусный рамен~", "دلم رامن خوشمزه می‌خواهد~", "أريد أن آكل الرامن اللذيذ~"],
+    ),
+    (
+        "oyakodon",
+        ["", "I want to eat a delicious oyakodon (chicken and egg rice bowl)~", "好想吃美味的亲子丼～", "맛있는 오야코동이 먹고 싶어요~", "Voglio mangiare un buon oyakodon (ciotola di riso con pollo e uova)~", "J'ai envie d'un délicieux oyakodon (bol de riz au poulet et à l'œuf)~", "Ich möchte eine leckere Oyakodon (Reisschüssel mit Huhn und Ei) essen~", "Хочу вкусный оякодон (рис с курицей и яйцом)~", "دلم اویاکودون خوشمزه (برنج با مرغ و تخم‌مرغ) می‌خواهد~", "أريد أن آكل أوياكودون اللذيذ (أرز بالدجاج والبيض)~"],
+    ),
+    (
+        "yakiniku",
+        ["", "I want to eat delicious Kuroge Wagyu yakiniku~", "好想吃美味的黑毛和牛烤肉～", "맛있는 구로게 와규 야키니쿠가 먹고 싶어요~", "Voglio mangiare un buon yakiniku di Wagyu Kuroge~", "J'ai envie d'un délicieux yakiniku de bœuf Wagyu Kuroge~", "Ich möchte leckeres Yakiniku vom Kuroge Wagyu essen~", "Хочу вкусное якинику из мраморной говядины вагю~", "دلم یاکینیکوی خوشمزه با گوشت واگیوی کوروگه می‌خواهد~", "أريد أن آكل ياكينيكو لحم الواغيو الكوروغي اللذيذ~"],
+    ),
+    (
+        "beefstew",
+        ["", "I want to eat delicious beef stew~", "好想吃美味的炖牛肉～", "맛있는 비프스튜가 먹고 싶어요~", "Voglio mangiare un buon stufato di manzo~", "J'ai envie d'un délicieux bœuf bourguignon~", "Ich möchte leckeren Rindereintopf essen~", "Хочу вкусное тушёное мясо с говядиной~", "دلم خورش گوشت گاو خوشمزه می‌خواهد~", "أريد أن آكل يخنة اللحم البقري اللذيذة~"],
+    ),
+    (
+        "whitestew",
+        ["", "I want to eat delicious white stew~", "好想吃美味的奶油炖菜～", "맛있는 화이트 스튜가 먹고 싶어요~", "Voglio mangiare un buon stufato bianco~", "J'ai envie d'un délicieux ragoût blanc à la crème~", "Ich möchte leckeren weißen Eintopf essen~", "Хочу вкусное сливочное рагу~", "دلم خورش سفید خوشمزه می‌خواهد~", "أريد أن آكل يخنة الكريمة البيضاء اللذيذة~"],
+    ),
+    (
+        "omurice",
+        ["", "I want to eat delicious omurice~", "好想吃美味的蛋包饭～", "맛있는 오므라이스가 먹고 싶어요~", "Voglio mangiare un buon omurice~", "J'ai envie d'un délicieux omurice~", "Ich möchte leckeres Omurice essen~", "Хочу вкусный омурайс~", "دلم املت‌برنج (اومورایس) خوشمزه می‌خواهد~", "أريد أن آكل الأومورايس اللذيذ~"],
+    ),
+    (
+        "mazingerz",
+        ["", "I want to watch Mazinger Z~", "好想看魔神Z～", "마징가 Z가 보고 싶어요~", "Voglio guardare Mazinga Z~", "J'ai envie de regarder Mazinger Z~", "Ich möchte Mazinger Z sehen~", "Хочу посмотреть «Мазингер Зет»~", "دلم می‌خواهد ماژینگر زد را ببینم~", "أريد أن أشاهد مازينجر زد~"],
+    ),
+    (
+        "greatmazinger",
+        ["", "I want to watch Great Mazinger~", "好想看大魔神～", "그레이트 마징가가 보고 싶어요~", "Voglio guardare Great Mazinga~", "J'ai envie de regarder Great Mazinger~", "Ich möchte Great Mazinger sehen~", "Хочу посмотреть «Грейт Мазингер»~", "دلم می‌خواهد گریت ماژینگر را ببینم~", "أريد أن أشاهد غريت مازينجر~"],
+    ),
+    (
+        "grendizer",
+        ["", "I want to watch UFO Robot Grendizer~", "好想看UFO机器人金刚战神～", "UFO 로봇 그렌다이저가 보고 싶어요~", "Voglio guardare UFO Robot Goldrake~", "J'ai envie de regarder Goldorak~", "Ich möchte Grendizer sehen~", "Хочу посмотреть «Грендайзер»~", "دلم می‌خواهد یو‌اف‌او روبو گرندایزر را ببینم~", "أريد أن أشاهد غرندايزر~"],
+    ),
+    (
+        "gaiking",
+        ["", "I want to watch Daikumaryu Gaiking~", "好想看大空魔龙盖基因～", "대공마룡 가이킹이 보고 싶어요~", "Voglio guardare Gaiking, il drago dei cieli~", "J'ai envie de regarder Gaiking~", "Ich möchte Gaiking sehen~", "Хочу посмотреть «Гайкинг»~", "دلم می‌خواهد گایکینگ را ببینم~", "أريد أن أشاهد غايكينغ~"],
+    ),
+    (
+        "jeeg",
+        ["", "I want to watch Steel Jeeg~", "好想看钢铁杰克～", "강철 지그가 보고 싶어요~", "Voglio guardare Jeeg Robot d'acciaio~", "J'ai envie de regarder Jeeg~", "Ich möchte Steel Jeeg sehen~", "Хочу посмотреть «Стальной Джиг»~", "دلم می‌خواهد جیگ فولادی را ببینم~", "أريد أن أشاهد جيغ الفولاذي~"],
     ),
 ];
 

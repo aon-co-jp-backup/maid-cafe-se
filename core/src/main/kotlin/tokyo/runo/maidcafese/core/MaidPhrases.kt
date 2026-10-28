@@ -38,6 +38,20 @@ object MaidPhrases {
         Phrase("okashi", "お菓子の時間よ"),
         Phrase("itterassyai", "いってらっしゃいませご主人様"),
         Phrase("ofuro", "お風呂になさいますか？それとも私になさいますか？"),
+        Phrase("itadakimasu", "いただきますの時間ですよ"),
+        Phrase("katsucurry", "美味しいカツカレーが食べたいよ〜"),
+        Phrase("kakifurai", "美味しいカキフライカレーが食べたいよ〜"),
+        Phrase("ramen", "美味しいラーメンが食べたいよ〜"),
+        Phrase("oyakodon", "美味しい親子丼が食べたいよ〜"),
+        Phrase("yakiniku", "美味しい黒毛和牛の焼肉が食べたいよ〜"),
+        Phrase("beefstew", "美味しいビーフシチューが食べたいよ〜"),
+        Phrase("whitestew", "美味しいホワイトシチューが食べたいよ〜"),
+        Phrase("omurice", "美味しいオムライスが食べたいよ〜"),
+        Phrase("mazingerz", "マジンガーZが見たいよ〜"),
+        Phrase("greatmazinger", "グレートマジンガーが見たいよ〜"),
+        Phrase("grendizer", "UFOロボグレンダイザーが見たいよ〜"),
+        Phrase("gaiking", "大空魔竜ガイキングが見たいよ〜"),
+        Phrase("jeeg", "鋼鉄ジーグが見たいよ〜"),
     )
 
     fun byId(id: String): Phrase? = all.firstOrNull { it.id == id }

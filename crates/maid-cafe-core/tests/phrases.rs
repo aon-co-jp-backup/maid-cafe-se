@@ -41,7 +41,7 @@ fn catalog_has_the_requested_phrases() {
     assert!(display.contains(&"パーフェクト！"));
     assert!(display.contains(&"ご主人さま～、お～き～て～。今日も頑張って～"));
     let ids: std::collections::HashSet<&str> = PHRASES.iter().map(|p| p.id).collect();
-    assert_eq!(30, ids.len());
+    assert_eq!(44, ids.len());
 }
 
 #[test]

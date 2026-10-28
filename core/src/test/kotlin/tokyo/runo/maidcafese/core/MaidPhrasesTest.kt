@@ -36,7 +36,7 @@ class MaidPhrasesTest {
         assertTrue("エクセレント！" in display)
         assertTrue("パーフェクト！" in display)
         assertTrue("ご主人さま～、お～き～て～。今日も頑張って～" in display)
-        assertEquals(30, MaidPhrases.all.map { it.id }.toSet().size)
+        assertEquals(44, MaidPhrases.all.map { it.id }.toSet().size)
     }
 
     @Test fun singlePhraseAppendedAfterMessage() {

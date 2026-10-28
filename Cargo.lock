@@ -2131,7 +2131,7 @@ dependencies = [
 
 [[package]]
 name = "maid-cafe-desktop"
-version = "0.5.3"
+version = "0.5.5"
 dependencies = [
  "bytes",
  "chrono",
@@ -2823,8 +2823,10 @@ dependencies = [
  "hyper-util",
  "open-runo-openapi",
  "open-runo-router",
+ "schemars",
  "serde",
  "serde_json",
+ "serde_urlencoded",
  "tokio",
 ]
 

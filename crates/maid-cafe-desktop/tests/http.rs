@@ -85,7 +85,7 @@ fn alarm_crud_over_http_persists_to_disk() {
     assert_eq!(json!([]), state["alarms"]);
     assert!(state["next"].is_null());
     assert_eq!(3, state["sounds"].as_array().unwrap().len());
-    assert_eq!(7, state["phrases"].as_array().unwrap().len());
+    assert_eq!(44, state["phrases"].as_array().unwrap().len());
 
     let (st, r) = post(&s, "/api/alarms", &alarm("a1"), &[], true);
     assert_eq!((200, json!({"ok": true})), (st, r));

@@ -163,7 +163,7 @@ pub struct Phrase {
 }
 
 /// メイドのセリフ集(画面の並びはこの順)。
-pub const PHRASES: [Phrase; 30] = [
+pub const PHRASES: [Phrase; 44] = [
     // 目覚まし用。喋る順は、ユーザーが付けた番号で決まる。
     Phrase {
         id: "okite",
@@ -223,6 +223,20 @@ pub const PHRASES: [Phrase; 30] = [
     Phrase { id: "okashi", display: "お菓子の時間よ", spoken: "おかしの、時間よ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
     Phrase { id: "itterassyai", display: "いってらっしゃいませご主人様", spoken: "いってらっしゃいませ、ご主人様！", pitch: 1.05, rate: 0.92, gap_ms: 350 },
     Phrase { id: "ofuro", display: "お風呂になさいますか？それとも私になさいますか？", spoken: "おふろに、なさいますか？ それとも、わたしに、なさいますか？", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "itadakimasu", display: "いただきますの時間ですよ", spoken: "いただきますの、時間ですよ", pitch: 1.05, rate: 0.92, gap_ms: 350 },
+    Phrase { id: "katsucurry", display: "美味しいカツカレーが食べたいよ〜", spoken: "おいしい、かつカレーが、食べたいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "kakifurai", display: "美味しいカキフライカレーが食べたいよ〜", spoken: "おいしい、かきフライカレーが、食べたいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "ramen", display: "美味しいラーメンが食べたいよ〜", spoken: "おいしい、らーめんが、食べたいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "oyakodon", display: "美味しい親子丼が食べたいよ〜", spoken: "おいしい、おやこどんが、食べたいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "yakiniku", display: "美味しい黒毛和牛の焼肉が食べたいよ〜", spoken: "おいしい、くろげわぎゅうの、やきにくが、食べたいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "beefstew", display: "美味しいビーフシチューが食べたいよ〜", spoken: "おいしい、ビーフシチューが、食べたいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "whitestew", display: "美味しいホワイトシチューが食べたいよ〜", spoken: "おいしい、ホワイトシチューが、食べたいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "omurice", display: "美味しいオムライスが食べたいよ〜", spoken: "おいしい、オムライスが、食べたいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "mazingerz", display: "マジンガーZが見たいよ〜", spoken: "マジンガーゼットが、見たいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "greatmazinger", display: "グレートマジンガーが見たいよ〜", spoken: "グレートマジンガーが、見たいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "grendizer", display: "UFOロボグレンダイザーが見たいよ〜", spoken: "ユーフォーロボ、グレンダイザーが、見たいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "gaiking", display: "大空魔竜ガイキングが見たいよ〜", spoken: "だいくうまりゅう、ガイキングが、見たいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
+    Phrase { id: "jeeg", display: "鋼鉄ジーグが見たいよ〜", spoken: "こうてつ、ジーグが、見たいよー", pitch: 1.06, rate: 0.9, gap_ms: 350 },
 ];
 
 /// メイドのセリフの検索と、**喋る順の番号**の操作。
