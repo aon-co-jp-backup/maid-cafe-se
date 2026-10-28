@@ -79,7 +79,7 @@
 
 ## maid-cafe.tokyo 設計作業 (2026-10-28) / maid-cafe.tokyo design work
 
-- **成果物 / Deliverable**: [`docs/maid-cafe-tokyo-design.md`](docs/maid-cafe-tokyo-design.md)(日本語、日英要約つき、ドラフトv0.1)。コミット `09c6355`、**未push**(ユーザー確認待ち)。This is a design document only: no code, no repo creation/rename, no deployment was done.
+- **成果物 / Deliverable**: [`docs/maid-cafe-tokyo-design.md`](docs/maid-cafe-tokyo-design.md)(日本語、日英要約つき、ドラフトv0.1)。コミット `27711f6`、**未push**(ユーザー確認待ち)。This is a design document only: no code, no repo creation/rename, no deployment was done.
 - **内容 / Contents**: 目的と対象、落ちこぼれ対策(難易度制御・間隔反復)、maid-cafe-english+realdata.pro+aruaru-search の統合案、リポジトリ名整理(推奨: maid-cafe-english を maid-cafe-tokyo へ名前変更)、出典つきニュース回答、データ分析(Octoparse記事の20件の公開データ源を3区分に分類)、ConoHa VPS配備と毎朝のsystemd timer自動更新、段階計画、リスクと未決事項13件。
 - **着手ゲート / Gate**: RPoemの保守完了まで実装しない。条件=RPoem masterの最新コミットのCIがgreen、かつユーザーが保守終了を明示。調査時点(`0443fde`)のCIは**failure**。Do not start implementation until RPoem master CI is green and the user declares maintenance done.
 - **未確認 / Not verified**: 各リポジトリの実動作(READMEと構成のみ読んだ)、データ源20件のToS・robots.txt、VPS/DNS/HTTPS。
@@ -92,10 +92,10 @@ maid-cafe.tokyo の作業を再開します。まず F:\maid-cafe-se\docs\maid-c
 PORTING.md の「maid-cafe.tokyo 設計作業」を読んでください。
 1. 設計書の未決事項(§10.2の13項目)について私の回答を聞き、設計書を更新する。
 2. aon-co-jp/RPoem の master 最新コミットの CI が green か確認する(前回は failure)。green かつ私が「RPoem保守終了」と言うまで実装には着手しない。
-3. 設計書のコミット(09c6355)を push してよいか私に確認する。
+3. 設計書のコミット(27711f6)を push してよいか私に確認する。
 制約: 秘密(IP・鍵・トークン)はリポジトリに入れない/リポジトリ新設・名前変更・デプロイは私の許可後/チャットは日本語/実機・実環境で未確認のことを完成と言わない。
 
 Resuming maid-cafe.tokyo work. Read docs/maid-cafe-tokyo-design.md (design v0.1) and the "maid-cafe.tokyo design work" section of PORTING.md first.
-1) Ask me the 13 open questions (§10.2) and update the design. 2) Check RPoem master CI (was failing); no implementation until it is green AND I say maintenance is done. 3) Ask before pushing commit 09c6355.
+1) Ask me the 13 open questions (§10.2) and update the design. 2) Check RPoem master CI (was failing); no implementation until it is green AND I say maintenance is done. 3) Ask before pushing commit 27711f6.
 Constraints: no secrets in repos; no repo creation/rename/deploy without my approval; chat in Japanese; never call anything done unless verified on a real device/environment.
 ```
