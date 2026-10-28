@@ -65,7 +65,16 @@ d="$(cd "$(dirname "$0")" && pwd)"
 install -Dm755 "$d/maid-cafe-se" "$HOME/.local/bin/maid-cafe-se"
 install -Dm644 "$d/maid-cafe-se.png" "$HOME/.local/share/icons/hicolor/512x512/apps/maid-cafe-se.png"
 install -Dm644 "$d/maid-cafe-se.desktop" "$HOME/.local/share/applications/maid-cafe-se.desktop"
-echo "installed. 読み上げには espeak-ng が必要です (e.g. sudo apt install espeak-ng)"
+# 読み上げに必要な espeak-ng を、無ければ入れる(パッケージマネージャを自動判別。sudoのパスワードを聞かれることがある)
+if ! command -v espeak-ng >/dev/null 2>&1; then
+  S=""; [ "$(id -u)" = 0 ] || S="sudo"
+  if command -v apt-get >/dev/null 2>&1; then $S apt-get install -y espeak-ng
+  elif command -v dnf >/dev/null 2>&1; then $S dnf install -y espeak-ng
+  elif command -v pacman >/dev/null 2>&1; then $S pacman -S --noconfirm espeak-ng
+  elif command -v zypper >/dev/null 2>&1; then $S zypper install -y espeak-ng
+  else echo "espeak-ng を自動で入れられませんでした。手動で入れてください / please install espeak-ng manually"; fi
+fi
+echo "installed."
 EOF
 chmod +x "$tdir/install.sh"
 tgz="$dist/maid-cafe-se-$version-linux-$(uname -m).tar.gz"
