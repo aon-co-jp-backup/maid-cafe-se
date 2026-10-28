@@ -133,3 +133,9 @@ Rustのビルドには、兄弟ディレクトリに`RPoem`(`F:\RPoem`)が必要
 ---
 
 作者 / Author: 石 塚 正 浩（MASAHIRO ISHIZUKA） (https://github.com/aon-co-jp)
+
+## maid-cafe.tokyo 設計書 / Design document for maid-cafe.tokyo
+
+目覚ましアプリとは別件の、学習サイト maid-cafe.tokyo(メイドカフェ風の先生による英会話・開発・学校の勉強・研修、出典つきニュースとデータ分析)の設計書を [`docs/maid-cafe-tokyo-design.md`](docs/maid-cafe-tokyo-design.md) に置いています(設計のみ・コード未着手)。再開手順は [`PORTING.md`](PORTING.md)。
+
+A separate-track design document for the maid-cafe.tokyo learning site (maid-café-style tutor for English, development, school subjects and training, plus sourced news and data analysis) lives in [`docs/maid-cafe-tokyo-design.md`](docs/maid-cafe-tokyo-design.md). Design only; no code yet. Resume steps are in [`PORTING.md`](PORTING.md).
