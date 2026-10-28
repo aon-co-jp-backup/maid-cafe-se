@@ -1,4 +1,4 @@
-//! 設定の保存。`%APPDATA%\maid-cafe-se\`(環境変数`MAID_CAFE_SE_DATA`で変更可、テスト用)。
+//! 設定の保存。`%APPDATA%\maid-cafe-se\`(macOSは`~/Library/Application Support/maid-cafe-se`、Linuxは`~/.local/share/maid-cafe-se`。環境変数`MAID_CAFE_SE_DATA`で変更可、テスト用)。
 //!
 //! Kotlin版(旧Windows版)と**同じ形式**: アラームは`alarms.txt`(1行1件の`key=value&...`、core::codec)、
 //! 設定は`settings.properties`(Javaのpropertiesと同じ`key=value`)。旧版のデータをそのまま読める。
@@ -21,8 +21,16 @@ impl Store {
         if let Some(d) = std::env::var_os("MAID_CAFE_SE_DATA") {
             return PathBuf::from(d);
         }
-        let base = std::env::var_os("APPDATA").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
-        base.join("maid-cafe-se")
+        #[cfg(windows)]
+        {
+            let base = std::env::var_os("APPDATA").map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
+            base.join("maid-cafe-se")
+        }
+        #[cfg(not(windows))]
+        {
+            let env = |k: &str| std::env::var_os(k).map(PathBuf::from);
+            unix_data_dir(cfg!(target_os = "macos"), env("HOME"), env("XDG_DATA_HOME"))
+        }
     }
 
     pub fn new(dir: PathBuf) -> std::io::Result<Self> {
@@ -152,10 +160,28 @@ fn render_props(m: &HashMap<String, String>) -> String {
     keys.iter().map(|k| format!("{}={}\n", esc(k), esc(&m[*k]))).collect()
 }
 
+/// Windows以外の保存先(`home`/`xdg_data`は環境から渡す)。
+#[cfg_attr(windows, allow(dead_code))]
+pub fn unix_data_dir(macos: bool, home: Option<PathBuf>, xdg_data: Option<PathBuf>) -> PathBuf {
+    if macos {
+        return home.unwrap_or_else(|| PathBuf::from(".")).join("Library/Application Support/maid-cafe-se");
+    }
+    let base = xdg_data.filter(|p| p.is_absolute()).or_else(|| home.map(|h| h.join(".local/share"))).unwrap_or_else(|| PathBuf::from("."));
+    base.join("maid-cafe-se")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use maid_cafe_core::{AlarmKind, Recurrence, Schedule};
+
+    #[test]
+    fn unix_data_dir_follows_each_os_convention() {
+        let h = Some(PathBuf::from("/home/u"));
+        assert_eq!(PathBuf::from("/home/u/Library/Application Support/maid-cafe-se"), unix_data_dir(true, h.clone(), None));
+        assert_eq!(PathBuf::from("/home/u/.local/share/maid-cafe-se"), unix_data_dir(false, h.clone(), None));
+        assert_eq!(PathBuf::from("/home/u/.local/share/maid-cafe-se"), unix_data_dir(false, h, Some(PathBuf::from("rel"))), "相対パスのXDG_DATA_HOMEは無視する");
+    }
 
     fn temp_store(tag: &str) -> Store {
         let dir = std::env::temp_dir().join(format!("mcs-store-{}-{tag}", std::process::id()));

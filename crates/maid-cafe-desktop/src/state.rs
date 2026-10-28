@@ -124,7 +124,7 @@ impl AppState {
         }
     }
 
-    // ---- Windows起動時の自動起動(レジストリのRunキー) ----
+    // ---- ログイン時の自動起動(Windows=レジストリのRunキー、macOS=LaunchAgent、Linux=XDG autostart) ----
 
     const RUN_KEY: &'static str = r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run";
     const RUN_NAME: &'static str = "maid-cafe-se";
@@ -136,7 +136,7 @@ impl AppState {
         }
         #[cfg(not(windows))]
         {
-            false
+            crate::autostart::enabled()
         }
     }
 
@@ -155,8 +155,7 @@ impl AppState {
         }
         #[cfg(not(windows))]
         {
-            let _ = (on, &self.exe);
-            Err("この環境(Windows以外)では自動起動を設定できません".into())
+            crate::autostart::set(on, &self.exe)
         }
     }
 }

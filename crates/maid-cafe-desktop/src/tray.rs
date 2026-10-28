@@ -1,4 +1,4 @@
-//! タスクトレイ常駐。メニュー: 画面を開く / 止める / 終了。メインスレッドでイベントループを回す。
+//! タスクトレイ常駐(Windows=タスクトレイ、macOS=メニューバー、Linux=AppIndicator。LinuxとmacOSの実機は未確認)。メニュー: 画面を開く / 止める / 終了。メインスレッドでイベントループを回す。
 
 use crate::state::AppState;
 use std::sync::Arc;
@@ -27,21 +27,42 @@ fn icon() -> Icon {
 
 /// トレイを出して、「終了」が選ばれるまで戻らない。
 pub fn run(state: Arc<AppState>, port: u16) {
-    let event_loop = EventLoopBuilder::new().build();
+    #[allow(unused_mut)]
+    let mut event_loop = EventLoopBuilder::new().build();
+    // macOS: Dockに出さず、メニューバーだけに常駐する
+    #[cfg(target_os = "macos")]
+    tao::platform::macos::EventLoopExtMacOS::set_activation_policy(&mut event_loop, tao::platform::macos::ActivationPolicy::Accessory);
     let menu = Menu::new();
     let open = MenuItem::new("画面を開く", true, None);
     let stop = MenuItem::new("鳴っている音を止める", true, None);
     let quit = MenuItem::new("終了", true, None);
     let _ = menu.append_items(&[&open, &stop, &PredefinedMenuItem::separator(), &quit]);
-    let tray = TrayIconBuilder::new().with_menu(Box::new(menu)).with_tooltip("maid-cafe-se").with_icon(icon()).build();
-    if let Err(e) = &tray {
-        state.store.log(&format!("tray failed: {e}"));
-    }
+    let build_tray = {
+        let state = state.clone();
+        move || {
+            let tray = TrayIconBuilder::new().with_menu(Box::new(menu.clone())).with_tooltip("maid-cafe-se").with_icon(icon()).build();
+            if let Err(e) = &tray {
+                state.store.log(&format!("tray failed: {e}"));
+            }
+            tray.ok()
+        }
+    };
+    // macOSは、イベントループが動き出してからメインスレッドで作る必要がある。他は先に作る
+    #[cfg(not(target_os = "macos"))]
+    let mut tray = build_tray();
+    #[cfg(target_os = "macos")]
+    let mut tray: Option<tray_icon::TrayIcon> = None;
     let (open_id, stop_id, quit_id) = (open.id().clone(), stop.id().clone(), quit.id().clone());
 
-    event_loop.run(move |_event: Event<'_, ()>, _, flow| {
+    event_loop.run(move |event: Event<'_, ()>, _, flow| {
+        #[cfg(target_os = "macos")]
+        if matches!(event, Event::NewEvents(tao::event::StartCause::Init)) {
+            tray = build_tray();
+        }
+        #[cfg(not(target_os = "macos"))]
+        let _ = &event;
         *flow = ControlFlow::WaitUntil(Instant::now() + Duration::from_millis(150));
-        let _keep = &tray;
+        let _keep = &mut tray;
         while let Ok(ev) = MenuEvent::receiver().try_recv() {
             if ev.id == open_id {
                 crate::open_ui(port);

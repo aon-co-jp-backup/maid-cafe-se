@@ -52,6 +52,28 @@ Androidスマホを、メイドカフェ風(または低い男性の声)の専�
 - コマンドライン: `--minimized`(画面なしでトレイ常駐。自動起動用)、`--no-tray`、`--autostart on|off`、`--selftest [出力先] [--play]`(読み上げの自己診断。`report.txt`にも結果を残す)。
 - Googleカレンダー連動はAndroid版のみ(Windows版は未対応)。
 
+## macOS / Linux版(v0.5.6〜、**実機未検証**) / macOS and Linux (untested on real machines)
+
+`crates/maid-cafe-desktop`はWindows以外でもビルドできるようにした(同じコード、OSごとの部分だけ`cfg`で分岐)。インストーラーはGitHub Actions(`.github/workflows/desktop.yml`)が作る。
+**開発機はWindowsのため、macOS/Linuxの実機では動かしていない。CIで確認できているのは「ビルド・単体テスト・パッケージ化」まで**(画面表示・トレイ・実際に鳴る音・ログイン時の自動起動は未確認)。
+
+| | Windows | macOS | Linux |
+|---|---|---|---|
+| 読み上げ | SAPI(PowerShell経由) | `say`(標準搭載、`--file-format=WAVE`でWAV出力) | `espeak-ng`(別途インストール。`espeak`も可) |
+| 再生 | `PlaySound` | `afplay` | `paplay`/`pw-play`/`aplay`/`ffplay`のうち最初に使えたもの |
+| トレイ | タスクトレイ | メニューバー(Dockには出さない) | AppIndicator(GTK、`libayatana-appindicator3`) |
+| 自動起動 | レジストリRunキー | `~/Library/LaunchAgents/jp.co.aon.maid-cafe-se.plist` | `~/.config/autostart/maid-cafe-se.desktop` |
+| 保存先 | `%APPDATA%\maid-cafe-se` | `~/Library/Application Support/maid-cafe-se` | `~/.local/share/maid-cafe-se` |
+| 画面を開く | Edgeアプリ表示 | `open` | `xdg-open` |
+| 配布物 | NSISインストーラー | `.dmg`(universal、ad-hoc署名のみ・未公証) | `.deb`、`.tar.gz`(`install.sh`で`~/.local`へ) |
+
+- macOS: 署名・公証をしていないため、初回は「右クリック→開く」が必要(または`xattr -dr com.apple.quarantine /Applications/maid-cafe-se.app`)。日本語の読み上げは、「システム設定→アクセシビリティ→読み上げコンテンツ」でKyoko等の日本語音声を入れる。
+- Linux: 読み上げに`espeak-ng`が必要(`sudo apt install espeak-ng`)。`espeak-ng`の日本語は機械的な声で、Windows/macOSより品質が低い(後段の声の加工は同じ)。`speech-dispatcher`はWAV出力できないため使っていない。AppImageは作っていない(`.deb`と`.tar.gz`のみ)。
+- 既知の差: Googleカレンダー連動はAndroid版のみ。macOS/Linuxの声の性別は`say`が教えてくれないため、日本語の既知の声(Kyoko等)以外は「不明」として扱う。
+
+The desktop crate now also builds on macOS and Linux (OS-specific parts behind `cfg`). Speech: macOS `say`, Linux `espeak-ng` (both write WAV, then the same DSP/playback pipeline as Windows); playback via `afplay` / `paplay`·`pw-play`·`aplay`·`ffplay`; tray via menu bar / AppIndicator; autostart via LaunchAgent / XDG autostart. Installers (`.dmg`, `.deb`, `.tar.gz`) are built by GitHub Actions on `v*` tags.
+**Not verified on real macOS/Linux machines** (the dev machine is Windows): CI only proves build + unit tests + packaging. The macOS app is ad-hoc signed and not notarized.
+
 ## 声の抑揚・かわいさ、声でアラーム(v0.5.1)
 
 - **メイドちゃんの声をよりかわいく**: 音程を1.12→1.20倍、声の太さ(声道の小ささ)を1.06→1.10倍、高域のきらめきを+3→+4dB(共有クレート`open-runo-voice`のレシピ)。低い男性の声は変えていない。

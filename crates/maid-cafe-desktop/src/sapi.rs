@@ -1,3 +1,5 @@
+//! 音声合成の入口。Windows以外は`tts_unix`(macOS=`say`、Linux=`espeak-ng`)へ振り分ける。
+//!
 //! Windows標準の音声合成(System.Speech = SAPI5)を、PowerShell経由で使う。追加インストール不要。
 //! 日本語の声(Microsoft Haruka等)は、Windowsの「言語」設定で日本語音声を入れると使える。
 //! (Kotlin版`Sapi.kt`と、open-englishの`server/src/tts.rs`の実績のある方式。)
@@ -30,6 +32,7 @@ pub struct Synthesized {
 
 const HEADER: &str = "[Console]::OutputEncoding = [Text.Encoding]::UTF8\nAdd-Type -AssemblyName System.Speech\n";
 
+#[cfg_attr(not(windows), allow(dead_code))]
 fn list_script() -> String {
     format!(
         "{HEADER}$s = New-Object System.Speech.Synthesis.SpeechSynthesizer\n\
@@ -38,6 +41,7 @@ fn list_script() -> String {
     )
 }
 
+#[cfg_attr(not(windows), allow(dead_code))]
 fn synth_script() -> String {
     format!(
         "param([string]$InFile, [string]$OutDir, [string]$Voice, [string]$Lang = 'ja')\n{HEADER}\
@@ -68,6 +72,7 @@ pub fn rate_step(multiplier: f64) -> i32 {
 }
 
 /// Windows PowerShell 5.1は、BOMなしUTF-8のスクリプトを日本語コードページで読んでしまうので、BOMを付けて書く。
+#[cfg_attr(not(windows), allow(dead_code))]
 fn write_script(dir: &Path, name: &str, body: &str) -> std::io::Result<PathBuf> {
     let path = dir.join(name);
     let mut bytes = vec![0xEF, 0xBB, 0xBF];
@@ -83,6 +88,7 @@ fn work_dir() -> std::io::Result<PathBuf> {
     Ok(dir)
 }
 
+#[cfg_attr(not(windows), allow(dead_code))]
 fn powershell(args: &[String], timeout: Duration) -> Result<String, String> {
     #[cfg(windows)]
     {
@@ -139,7 +145,7 @@ fn powershell(args: &[String], timeout: Duration) -> Result<String, String> {
 }
 
 /// インストール済みの音声一覧。取得できなければ空。
-pub fn list_voices() -> Vec<SapiVoice> {
+fn list_voices_windows() -> Vec<SapiVoice> {
     let Ok(dir) = work_dir() else { return Vec::new() };
     let result = write_script(&dir, "list.ps1", &list_script())
         .map_err(|e| e.to_string())
@@ -159,7 +165,7 @@ pub fn list_voices() -> Vec<SapiVoice> {
 
 /// `items`((SAPIのRate, 文章)の並び)を、1回のPowerShell起動でWAVへ合成する。
 /// 声は`voice_name`、未指定なら最初の日本語音声。文章はファイル経由で渡す(コマンドラインに埋め込まない)。
-pub fn synthesize(items: &[(i32, String)], voice_name: Option<&str>, lang: &str) -> Result<Synthesized, String> {
+fn synthesize_windows(items: &[(i32, String)], voice_name: Option<&str>, lang: &str) -> Result<Synthesized, String> {
     if items.is_empty() {
         return Err("読み上げる文章がありません".into());
     }
@@ -211,6 +217,30 @@ pub fn synthesize(items: &[(i32, String)], voice_name: Option<&str>, lang: &str)
     })();
     let _ = std::fs::remove_dir_all(&dir);
     result
+}
+
+/// インストール済みの音声一覧。取得できなければ空。Windows=SAPI、macOS=`say`、Linux=`espeak-ng`。
+pub fn list_voices() -> Vec<SapiVoice> {
+    #[cfg(windows)]
+    {
+        list_voices_windows()
+    }
+    #[cfg(not(windows))]
+    {
+        crate::tts_unix::list_voices()
+    }
+}
+
+/// `items`((SAPI相当のRate, 文章)の並び)を、区切りごとのWAVへ合成する。Windows以外ではRateを話速(WPM)へ換算して使う。
+pub fn synthesize(items: &[(i32, String)], voice_name: Option<&str>, lang: &str) -> Result<Synthesized, String> {
+    #[cfg(windows)]
+    {
+        synthesize_windows(items, voice_name, lang)
+    }
+    #[cfg(not(windows))]
+    {
+        crate::tts_unix::synthesize(items, voice_name, lang)
+    }
 }
 
 #[cfg(test)]

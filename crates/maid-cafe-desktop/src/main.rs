@@ -1,11 +1,11 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
-//! maid-cafe-se Windows版(Rust + RPoem)。
+//! maid-cafe-se デスクトップ版(Rust + RPoem。Windows/macOS/Linux)。
 //!
 //! ```text
 //! maid-cafe-se                 画面を開いて起動(トレイに常駐)
-//! maid-cafe-se --minimized     画面は開かず、トレイへ常駐(Windows起動時の自動起動用)
+//! maid-cafe-se --minimized     画面は開かず、トレイへ常駐(ログイン時の自動起動用)
 //! maid-cafe-se --no-tray       トレイなし(サーバーだけ動く)
-//! maid-cafe-se --autostart on|off   Windows起動時の自動起動を設定/解除して終了
+//! maid-cafe-se --autostart on|off   ログイン時の自動起動を設定/解除して終了
 //! maid-cafe-se --selftest [出力先] [--play]   読み上げの自己診断
 //! ```
 
@@ -31,7 +31,7 @@ mod single {
     use windows_sys::Win32::System::Threading::CreateMutexW;
 
     /// 2つ目の起動なら`false`(最初のプロセスだけが`true`)。ハンドルはプロセス終了まで保持する。
-    pub fn first_instance() -> bool {
+    pub fn first_instance(_store: &maid_cafe_desktop::store::Store) -> bool {
         let name: Vec<u16> = "Local\\maid-cafe-se-single-instance".encode_utf16().chain(std::iter::once(0)).collect();
         // SAFETY: `name`はNUL終端のUTF-16。戻り値のハンドルは閉じない(プロセス終了で解放される)。
         unsafe {
@@ -42,8 +42,15 @@ mod single {
 }
 #[cfg(not(windows))]
 mod single {
-    pub fn first_instance() -> bool {
-        true
+    use std::net::{Ipv4Addr, SocketAddr, TcpStream};
+    use std::time::Duration;
+
+    /// 前回書かれたポートに接続できれば、すでに起動している(2つ目)。
+    pub fn first_instance(store: &maid_cafe_desktop::store::Store) -> bool {
+        match store.read_port() {
+            Some(port) => TcpStream::connect_timeout(&SocketAddr::from((Ipv4Addr::LOCALHOST, port)), Duration::from_millis(500)).is_err(),
+            None => true,
+        }
     }
 }
 
@@ -82,7 +89,7 @@ fn main() {
         return;
     }
 
-    if !single::first_instance() {
+    if !single::first_instance(&store) {
         // すでに起動している: 起動済みの画面を開いて終わる
         if !has("--minimized") {
             if let Some(port) = store.read_port() {

@@ -11,6 +11,14 @@
 - ビルド: `JAVA_HOME`にAndroid Studio同梱JBR、`local.properties`のsdk.dirはスラッシュ区切りで書く(バックスラッシュだと"Invalid file path")。
 - 検証tips: `adb shell run-as`で`shared_prefs/maidcafese.xml`にアラームを直接仕込める(Git Bashでは`MSYS_NO_PATHCONV=1`必須)。
 
+## macOS / Linux対応 (2026-10-28) / macOS & Linux port
+
+- **状態: ビルド・単体テスト・パッケージ化のみCIで確認。macOS/Linuxの実機では未検証**(開発機はWindows)。未確認の点: トレイ/メニューバーの表示、`say`/`espeak-ng`での実際の読み上げ(日本語音声の有無)、`afplay`/`paplay`等での再生、ログイン時の自動起動(LaunchAgent/XDG)、.dmg/.debのインストール〜起動、Gatekeeper(未公証)の挙動。
+- 構成: `sapi.rs`が入口(Windows=PowerShell/SAPI、他=`tts_unix.rs`)。`tts_unix.rs`は`say -v ?`/`espeak-ng --voices`の解析と合成コマンドの組み立てを純粋関数にして、どのOSでもテスト可能。再生は`unixaudio.rs`(一時WAV→OSのプレイヤー。Windowsの`PlaySound`のループ再生は無いので、音を30秒に繰り返した1本を鳴らす)。自動起動は`autostart.rs`、保存先は`store.rs::unix_data_dir`。二重起動の検出は、`port.txt`のポートへ接続できるかで判定(Windowsは従来どおりMutex)。
+- Windowsの挙動は変えていない(`cfg(windows)`の既存コードはそのまま、依存の`windows-sys`/`winresource`をWindows限定にしただけ)。
+- CI: `.github/workflows/desktop.yml`。**path依存の兄弟リポジトリ(RPoem, RS-SmartTCP, open-cpu, open-raid-z, open-web-server)を、リポジトリの隣にcloneして揃える**(いずれも公開リポジトリ)。これらの最新masterを使うので、兄弟側の変更でCIが壊れ得る。`v*`タグで、リリースにmacOS `.dmg`とLinux `.deb`/`.tar.gz`を添付(リリースが無ければ作る)。`installer-housekeeping`はexeとAPKのみを扱うので、mac/Linuxのアセットは対象外。
+- 次の候補: 実機確認(特にmacOSのトレイと`say`の日本語、Linuxのトレイ環境差=GNOMEはAppIndicator拡張が必要)、Apple Developer IDでの署名・公証、AppImage、Linuxの日本語読み上げ品質(espeak-ng以外=Open JTalk等は声のライセンス確認が必要)。
+
 ## 次回再開ポイント(優先順)
 0. **ニューラルTTS(声質の根本改善)**: 端末TTSに頼らずオンデバイスで日本語ニューラルTTS(例: sherpa-onnx+VITS系)を使う案。またはmake-diskで検証済みのtract+ONNX(LavaSR帯域拡張、HT-Demucs等)で音声の帯域拡張。いずれもモデル(数十MB〜)のダウンロードとライセンス確認が必要なので、ユーザー許可を得てから。
 1. 実機端末での長時間検証(Doze・メーカー独自バッテリー制限・再起動後の復元)

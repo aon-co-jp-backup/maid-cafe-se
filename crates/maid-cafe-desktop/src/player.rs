@@ -103,15 +103,17 @@ mod winaudio {
     }
 }
 
+// Windows以外(macOS/Linux)は、OSのプレイヤーコマンドで鳴らす。WinのPlaySoundのようなループ再生は無いので、音を30秒ぶんに繰り返した1本を鳴らす
 #[cfg(not(windows))]
-mod winaudio {
-    pub fn play_sync(_wav: &[u8]) -> bool {
-        false
+use crate::unixaudio as winaudio;
+
+/// 音(`sound`)を`max`の長さになるまで繰り返した1本(音量はそのまま)。
+pub fn loop_sound(sound: &Pcm, max: Duration) -> Pcm {
+    let total = (max.as_secs_f64() * sound.sample_rate as f64) as usize;
+    if sound.samples.is_empty() {
+        return Pcm::new(Vec::new(), sound.sample_rate);
     }
-    pub fn play_loop(_wav: &[u8]) -> bool {
-        false
-    }
-    pub fn stop_all() {}
+    Pcm::new((0..total).map(|i| sound.samples[i % sound.samples.len()]).collect(), sound.sample_rate)
 }
 
 pub struct Player {
@@ -149,7 +151,13 @@ impl Player {
         let voice_name = if o.lang == "ja" { voice_name } else { None };
         let synthesized = sapi::synthesize(&items, voice_name, &o.lang).map_err(|e| {
             if e.contains("no voice for") {
-                format!("Windowsに、その言語({})の音声が入っていません。「設定→時刻と言語→音声」で追加してください", o.lang)
+                if cfg!(windows) {
+                    format!("Windowsに、その言語({})の音声が入っていません。「設定→時刻と言語→音声」で追加してください", o.lang)
+                } else if cfg!(target_os = "macos") {
+                    format!("macOSに、その言語({})の音声が入っていません。「システム設定→アクセシビリティ→読み上げコンテンツ」で追加してください", o.lang)
+                } else {
+                    format!("espeak-ngに、その言語({})の音声がありません", o.lang)
+                }
             } else {
                 e
             }
@@ -208,6 +216,9 @@ impl Player {
                     winaudio::play_sync(&wav_bytes(&speech));
                 }
                 (None, Some(bed)) => {
+                    #[cfg(not(windows))]
+                    let wav = wav_bytes(&loop_sound(&bed, SOUND_MAX));
+                    #[cfg(windows)]
                     let wav = wav_bytes(&bed);
                     if winaudio::play_loop(&wav) {
                         let start = Instant::now();
@@ -285,6 +296,15 @@ mod tests {
         assert!((c.seconds() - 2.5).abs() < 0.01, "{}", c.seconds()); // 1s + 0.5s(間) + 1s
         let one = concat_speeches(&[sine(300.0, 24_000, 1.0, 0.5)], 500).unwrap();
         assert!((one.seconds() - 1.0).abs() < 0.001); // 1つだけなら、後ろに間を足さない
+    }
+
+    #[test]
+    fn loop_sound_repeats_to_the_requested_length() {
+        let bed = sound_pcm("chime").unwrap();
+        let l = loop_sound(&bed, Duration::from_secs(30));
+        assert_eq!(bed.sample_rate, l.sample_rate);
+        assert_eq!(30 * bed.sample_rate as usize, l.samples.len());
+        assert_eq!(bed.samples[0], l.samples[bed.samples.len()]);
     }
 
     #[test]

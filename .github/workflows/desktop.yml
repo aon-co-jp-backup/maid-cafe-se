@@ -1,0 +1,113 @@
+# デスクトップ版(Windows/macOS/Linux)のテストと、macOS/Linuxのインストーラー作成。
+#  - push / PR: 3つのOSでテスト(Windowsは既存のテストが通ることの確認)
+#  - v* タグ: macOS(.dmg)とLinux(.deb / .tar.gz)を作り、そのタグのリリースにアセットを添付する(リリースが無ければ作る)
+# 依存する兄弟リポジトリ(Cargo.tomlのpath依存。../../../RPoem など)は、リポジトリの隣にcloneして揃える。
+# 注意: 実機のmacOS/Linuxでの動作は未確認。CIで確認できるのは、ビルド・単体テスト・パッケージ化まで。
+name: desktop
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*"]
+    paths-ignore: ["webpage/**", "app/**", "shared-ui/**", "*.md"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Cargo.tomlのpath依存(../../../X)で必要な兄弟リポジトリ
+  SIBLINGS: "RPoem RS-SmartTCP open-cpu open-raid-z open-web-server"
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: 兄弟リポジトリをcloneする
+        shell: bash
+        run: |
+          for r in $SIBLINGS; do git clone --depth 1 "https://github.com/aon-co-jp/$r.git" "../$r"; done
+      - name: Linuxのビルド用パッケージ(GTK・トレイ)と読み上げ(espeak-ng・再生)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libxdo-dev libayatana-appindicator3-dev espeak-ng alsa-utils
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: テスト
+        run: cargo test -p maid-cafe-core -p maid-cafe-desktop
+      - name: ビルド(release)
+        run: cargo build --release -p maid-cafe-desktop
+
+  package-linux:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 兄弟リポジトリをcloneする
+        run: for r in $SIBLINGS; do git clone --depth 1 "https://github.com/aon-co-jp/$r.git" "../$r"; done
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libxdo-dev libayatana-appindicator3-dev espeak-ng
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: .deb と .tar.gz を作る
+        run: installer/build-linux.sh
+      - name: .debの中身を確認
+        run: |
+          dpkg-deb -I installer/dist/*.deb
+          dpkg-deb -c installer/dist/*.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            installer/dist/*.deb
+            installer/dist/*.tar.gz
+            installer/dist/SHA256SUMS-linux.txt
+
+  package-macos:
+    needs: test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 兄弟リポジトリをcloneする
+        run: for r in $SIBLINGS; do git clone --depth 1 "https://github.com/aon-co-jp/$r.git" "../$r"; done
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: .app と .dmg を作る(universal)
+        run: installer/build-macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-packages
+          path: |
+            installer/dist/*.dmg
+            installer/dist/SHA256SUMS-macos.txt
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [package-linux, package-macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+      - name: リリースにアセットを添付する(リリースが無ければ作る)
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$tag" --repo "$GITHUB_REPOSITORY" --title "$tag" --notes "macOS / Linux 版のインストーラー(未署名・実機での動作は未確認)。Windows/Android版は別途添付。"
+          ls -l assets
+          gh release upload "$tag" assets/* --repo "$GITHUB_REPOSITORY" --clobber

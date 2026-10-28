@@ -1,8 +1,9 @@
 #![allow(clippy::result_large_err)] // HTTPの応答(hyper::Response)をそのままErrで返す設計。大きさは問題にならない
 
-//! maid-cafe-se Windows版。画面とAPI(RPoem)・スケジューラ・Windows音声(SAPI)・保存。`main.rs`がトレイと起動処理をつなぐ。
+//! maid-cafe-se デスクトップ版(Windows/macOS/Linux)。画面とAPI(RPoem)・スケジューラ・音声合成(Windows=SAPI、macOS=`say`、Linux=`espeak-ng`)・保存。`main.rs`がトレイと起動処理をつなぐ。
 
 pub mod api;
+pub mod autostart;
 pub mod dto;
 pub mod player;
 pub mod sapi;
@@ -11,6 +12,8 @@ pub mod selftest;
 pub mod state;
 pub mod store;
 pub mod tray;
+pub mod tts_unix;
+pub mod unixaudio;
 
 use open_runo_poem_compat::{Server, TcpListener};
 use state::AppState;
@@ -68,8 +71,12 @@ pub fn open_ui(port: u16) {
             let _ = std::process::Command::new("cmd").args(["/c", "start", "", &url]).creation_flags(NO_WINDOW).spawn();
         }
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
     {
-        let _ = url;
+        let _ = std::process::Command::new("open").arg(&url).spawn();
+    }
+    #[cfg(all(unix, not(target_os = "macos")))]
+    {
+        let _ = std::process::Command::new("xdg-open").arg(&url).stdin(std::process::Stdio::null()).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null()).spawn();
     }
 }
