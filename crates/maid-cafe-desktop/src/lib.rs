@@ -11,6 +11,7 @@ pub mod scheduler;
 pub mod selftest;
 pub mod state;
 pub mod store;
+#[cfg(feature = "gui")]
 pub mod tray;
 pub mod tts_unix;
 pub mod unixaudio;

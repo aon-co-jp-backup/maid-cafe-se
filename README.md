@@ -68,7 +68,7 @@ Androidスマホを、メイドカフェ風(または低い男性の声)の専�
 | 配布物 | NSISインストーラー | `.dmg`(universal、ad-hoc署名のみ・未公証) | `.deb`、`.tar.gz`(`install.sh`で`~/.local`へ) |
 
 - macOS: 署名・公証をしていないため、初回は「右クリック→開く」が必要(または`xattr -dr com.apple.quarantine /Applications/maid-cafe-se.app`)。日本語の読み上げは、「システム設定→アクセシビリティ→読み上げコンテンツ」でKyoko等の日本語音声を入れる。
-- Linux: 読み上げに`espeak-ng`が必要(`sudo apt install espeak-ng`)。`espeak-ng`の日本語は機械的な声で、Windows/macOSより品質が低い(後段の声の加工は同じ)。`speech-dispatcher`はWAV出力できないため使っていない。AppImageは作っていない(`.deb`と`.tar.gz`のみ)。
+- Linux: 読み上げに`espeak-ng`が必要(`.deb`は自動で入り、`.tar.gz`の`install.sh`も無ければ自動導入する。手動なら`sudo apt install espeak-ng`)。`espeak-ng`の日本語は機械的な声で、Windows/macOSより品質が低い(後段の声の加工は同じ)。`speech-dispatcher`はWAV出力できないため使っていない。AppImageは作っていない(`.deb`と`.tar.gz`のみ)。
 - 既知の差: Googleカレンダー連動はAndroid版のみ。macOS/Linuxの声の性別は`say`が教えてくれないため、日本語の既知の声(Kyoko等)以外は「不明」として扱う。
 
 The desktop crate now also builds on macOS and Linux (OS-specific parts behind `cfg`). Speech: macOS `say`, Linux `espeak-ng` (both write WAV, then the same DSP/playback pipeline as Windows); playback via `afplay` / `paplay`·`pw-play`·`aplay`·`ffplay`; tray via menu bar / AppIndicator; autostart via LaunchAgent / XDG autostart. Installers (`.dmg`, `.deb`, `.tar.gz`) are built by GitHub Actions on `v*` tags.
