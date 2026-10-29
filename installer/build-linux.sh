@@ -3,7 +3,8 @@
 #
 # 使い方 / Usage:  installer/build-linux.sh [--skip-build]
 # 必要なもの / Requires: Rust (cargo)、dpkg-deb、python3、ビルド用に libgtk-3-dev libxdo-dev libayatana-appindicator3-dev
-# 出力 / Output: installer/dist/maid-cafe-se_<version>_<arch>.deb と maid-cafe-se-<version>-linux-<arch>.tar.gz と SHA256SUMS-linux.txt
+# AppImageは appimagetool がPATH(または APPIMAGETOOL)にある時だけ作る。
+# 出力 / Output: installer/dist/maid-cafe-se_<version>_<arch>.deb と maid-cafe-se-<version>-<arch>.AppImage とmaid-cafe-se-<version>-linux-<arch>.tar.gz と SHA256SUMS-linux.txt
 # 未検証: 開発機がWindowsのため、実機のLinuxでの動作は未確認(CIでビルド・テストのみ)。
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -52,6 +53,22 @@ EOF
 deb="$dist/maid-cafe-se_${version}_${debarch}.deb"
 dpkg-deb --root-owner-group --build "$pkg" "$deb"
 
+# ---- AppImage(appimagetoolがあれば作る。無ければスキップ。CIでは取得して作る) ----
+# 実行にはFUSEが要る。espeak-ngは同梱しない(.deb/.tar.gzと同じく、利用者が入れる)。
+appimg=""
+tool="${APPIMAGETOOL:-$(command -v appimagetool || true)}"
+if [ -n "$tool" ]; then
+  ad="$work/AppDir"
+  install -Dm755 "$bin" "$ad/usr/bin/maid-cafe-se"
+  cp "$work/maid-cafe-se.png" "$ad/maid-cafe-se.png"
+  printf '%s' "$desktop" > "$ad/maid-cafe-se.desktop"
+  printf '#!/bin/sh\nexec "$(dirname "$(readlink -f "$0")")/usr/bin/maid-cafe-se" "$@"\n' > "$ad/AppRun"; chmod +x "$ad/AppRun"
+  appimg="$dist/maid-cafe-se-$version-$(uname -m).AppImage"
+  ARCH="$(uname -m)" "$tool" "$ad" "$appimg"
+else
+  echo "appimagetoolが無いためAppImageはスキップ / appimagetool not found, skipping AppImage"
+fi
+
 # ---- .tar.gz(展開してinstall.shでも、そのまま実行でも) ----
 tdir="$work/maid-cafe-se-$version"
 mkdir -p "$tdir"
@@ -80,5 +97,5 @@ chmod +x "$tdir/install.sh"
 tgz="$dist/maid-cafe-se-$version-linux-$(uname -m).tar.gz"
 tar -C "$work" -czf "$tgz" "maid-cafe-se-$version"
 
-(cd "$dist" && sha256sum "$(basename "$deb")" "$(basename "$tgz")" > SHA256SUMS-linux.txt)
-echo "done:"; ls -l "$deb" "$tgz"
+(cd "$dist" && sha256sum "$(basename "$deb")" "$(basename "$tgz")" ${appimg:+"$(basename "$appimg")"} >SHA256SUMS-linux.txt)
+echo "done:"; ls -l "$deb" "$tgz" ${appimg:+"$appimg"}

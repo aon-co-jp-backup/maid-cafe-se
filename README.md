@@ -68,7 +68,7 @@ Androidスマホを、メイドカフェ風(または低い男性の声)の専�
 | 配布物 | NSISインストーラー | `.dmg`(universal、ad-hoc署名のみ・未公証) | `.deb`、`.tar.gz`(`install.sh`で`~/.local`へ) |
 
 - macOS: 署名・公証をしていないため、初回は「右クリック→開く」が必要(または`xattr -dr com.apple.quarantine /Applications/maid-cafe-se.app`)。日本語の読み上げは、「システム設定→アクセシビリティ→読み上げコンテンツ」でKyoko等の日本語音声を入れる。
-- Linux: 読み上げに`espeak-ng`が必要(`.deb`は自動で入り、`.tar.gz`の`install.sh`も無ければ自動導入する。手動なら`sudo apt install espeak-ng`)。`espeak-ng`の日本語は機械的な声で、Windows/macOSより品質が低い(後段の声の加工は同じ)。`speech-dispatcher`はWAV出力できないため使っていない。AppImageは作っていない(`.deb`と`.tar.gz`のみ)。
+- Linux: 読み上げに`espeak-ng`が必要(`.deb`は自動で入り、`.tar.gz`の`install.sh`も無ければ自動導入する。手動なら`sudo apt install espeak-ng`)。`espeak-ng`の日本語は機械的な声で、Windows/macOSより品質が低い(後段の声の加工は同じ)。`speech-dispatcher`はWAV出力できないため使っていない。AppImage(`maid-cafe-se-<ver>-x86_64.AppImage`、FUSEが必要、`espeak-ng`は同梱せず別途導入)もCIで生成する(実機未検証)。
 - 既知の差: Googleカレンダー連動はAndroid版のみ。macOS/Linuxの声の性別は`say`が教えてくれないため、日本語の既知の声(Kyoko等)以外は「不明」として扱う。
 
 The desktop crate now also builds on macOS and Linux (OS-specific parts behind `cfg`). Speech: macOS `say`, Linux `espeak-ng` (both write WAV, then the same DSP/playback pipeline as Windows); playback via `afplay` / `paplay`·`pw-play`·`aplay`·`ffplay`; tray via menu bar / AppIndicator; autostart via LaunchAgent / XDG autostart. Installers (`.dmg`, `.deb`, `.tar.gz`) are built by GitHub Actions on `v*` tags.
@@ -139,3 +139,10 @@ Rustのビルドには、兄弟ディレクトリに`RPoem`(`F:\RPoem`)が必要
 目覚ましアプリとは別件の、学習サイト maid-cafe.tokyo(メイドカフェ風の先生による英会話・開発・学校の勉強・研修、出典つきニュースとデータ分析)の設計書を [`docs/maid-cafe-tokyo-design.md`](docs/maid-cafe-tokyo-design.md) に置いています(設計のみ・コード未着手)。再開手順は [`PORTING.md`](PORTING.md)。
 
 A separate-track design document for the maid-cafe.tokyo learning site (maid-café-style tutor for English, development, school subjects and training, plus sourced news and data analysis) lives in [`docs/maid-cafe-tokyo-design.md`](docs/maid-cafe-tokyo-design.md). Design only; no code yet. Resume steps are in [`PORTING.md`](PORTING.md).
+
+## 配布形式の追加 (v0.5.6以降) / Additional distribution formats
+
+- **Android `.aab`**: `installer\build-aab.ps1`(JDK17、鍵情報は`build-release.ps1`と同じ外部ファイル)で署名つき`maid-cafe-se_<ver>_android.aab`を`installer\dist`へ出す。ローカルでjarsigner検証済み(自己署名のため警告は出る)。**Google Playへのアップロードは未検証**。`SHA256SUMS.txt`にはAPKの行を残したまま.aabの行を足す。
+- **Linux AppImage**: CI(`desktop.yml`)で`installer/build-linux.sh`が生成する。**実機で起動は未検証**。
+- **macOS署名・公証**: GitHub Secretsが全て設定された時だけ Developer ID署名+`notarytool`公証を行う(無ければ従来どおり未署名の.dmg)。**Apple Developerアカウントが無いため、実署名・公証は一度も動かしていない(未検証)**。Secrets名と手順はPORTING.md。
+- **Android `.aab`**: `installer\build-aab.ps1` builds a signed bundle into `installer\dist` (verified with jarsigner locally; Play upload not tested). **Linux AppImage** is built in CI (not run on real machines). **macOS Developer ID signing + notarization** runs only when all GitHub Secrets are set, otherwise the unsigned .dmg as before; **never executed (no Apple Developer account) — unverified**.

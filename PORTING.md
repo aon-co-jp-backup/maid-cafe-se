@@ -110,3 +110,15 @@ Resuming maid-cafe.tokyo work. Read docs/maid-cafe-tokyo-design.md (design v0.1)
 1) Ask me the 13 open questions (§10.2) and update the design. 2) Check RPoem master CI (was failing); no implementation until it is green AND I say maintenance is done. 3) (Commit 27711f6 is already pushed.)
 Constraints: no secrets in repos; no repo creation/rename/deploy without my approval; chat in Japanese; never call anything done unless verified on a real device/environment.
 ```
+
+## 配布形式の拡充 (2026-10-29) / More distribution formats
+
+- **Android .aab**: `installer/build-aab.ps1`(`bundleRelease`、JDK `C:\Program Files\Java\jdk-17`、鍵は`F:\maid-cafe-se-keystore.txt`)。0.5.6でビルドし`jarsigner -verify`で署名確認済み(警告は自己署名由来)。Play Consoleへのアップロードは未検証。リリース添付は手動(`SHA256SUMS.txt`のAPK行は残してある)。
+- **Linux AppImage**: `build-linux.sh`が`appimagetool`(PATHか`APPIMAGETOOL`)がある時だけ作る。CIはappimagetoolをcontinuousリリースから取得し`--appimage-extract-and-run`で実行。実機での起動は未検証。
+- **macOS署名・公証(未検証)**: `build-macos.sh`は下記6つが全て環境変数にある時だけ署名+公証+staple、無ければad-hoc署名。CIはGitHub Secretsから渡す。
+  - `MACOS_CERT_P12_BASE64`: Developer ID Application証明書(.p12)をbase64化した値 / `MACOS_CERT_PASSWORD`: そのp12のパスワード
+  - `MACOS_SIGN_IDENTITY`: 例 `Developer ID Application: 名前 (TEAMID)`
+  - `APPLE_ID`: Apple ID / `APPLE_TEAM_ID`: 10桁のチーム ID / `APPLE_APP_PASSWORD`: appleid.apple.comで発行するアプリ用パスワード
+  - 取得手順: Apple Developer Program(年額)に加入 → 証明書「Developer ID Application」を作成してキーチェーンから.p12を書き出し → `base64 -i cert.p12 | pbcopy`で値を作る → リポジトリのSettings→Secrets and variables→Actionsに6件を登録。秘密はリポジトリに入れない。
+  - 未検証: アカウントが無く、署名・`notarytool`・`stapler`は一度も動かしていない。初回は失敗する可能性が高く、実Secretsで要デバッグ。
+- **EN**: `.aab` via `installer/build-aab.ps1` (jarsigner-verified locally; Play upload untested). AppImage built in CI via appimagetool (untested on real machines). macOS: Developer ID signing + notarytool + stapler run only if all six secrets above are set (`MACOS_CERT_P12_BASE64`, `MACOS_CERT_PASSWORD`, `MACOS_SIGN_IDENTITY`, `APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_PASSWORD`); obtain them by joining the Apple Developer Program, creating a Developer ID Application cert, exporting .p12 (base64), and an app-specific password. **Never executed — no Apple Developer account.**
