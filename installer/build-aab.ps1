@@ -1,4 +1,4 @@
-# maid-cafe-se 署名つきAndroid App Bundle(.aab)のビルド。 / Build the signed Android App Bundle (.aab).
+﻿# maid-cafe-se 署名つきAndroid App Bundle(.aab)のビルド。 / Build the signed Android App Bundle (.aab).
 #
 # 使い方 / Usage:  powershell -ExecutionPolicy Bypass -File installer\build-aab.ps1
 # 鍵情報ファイルの形式は build-release.ps1 と同じ(リポジトリの外。コミットしない。値は出力しない)。
