@@ -12,8 +12,8 @@ android {
         applicationId = "tokyo.runo.maidcafese"
         minSdk = 26 // java.time を desugaring 無しで使うため
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.5.6"
+        versionCode = 13
+        versionName = "0.5.7"
     }
 
     // 正式リリース署名。鍵情報は環境変数からのみ受け取り、このファイルにも他のファイルにも秘密を書かない
