@@ -258,3 +258,10 @@ A separate-track design document for the maid-cafe.tokyo learning site (maid-caf
 - **WASM по-прежнему остаётся технологией для интерфейса.** Изменилось лишь то, что вызываемый им API теперь построен на Connect.
 - Интерфейсы, форма которых задана внешним стандартом (ACME, обратные вызовы OAuth, вебхуки сторонних сервисов, проверки работоспособности, статические файлы, OTLP), остаются обычным HTTP.
 - **Если есть сомнения — выбирайте Connect.**
+
+### 検証結果 (2026-11-13) / Verification results
+
+- 検証済み: v0.5.7のリリース添付物のSHA-256がSHA256SUMSと一致。.aabは`jarsigner -verify`で署名OK、.aabとAPKの署名証明書は同一(`CN=maid-cafe-se`)。WSL2(Ubuntu 24.04、実機のLinuxではない)で、AppImageと`.deb`(`apt install`で依存も解決)の`--selftest`が通り、日本語の合成が動いた。
+- 分かったこと: AppImageはライブラリを同梱しない。`libgtk-3-0`・`libxdo3`・`libayatana-appindicator3-1`・`espeak-ng`が無いと`libxdo.so.3`が無いと言って起動しない(`.deb`はDependsで自動導入)。FUSEの有無とは別の話。
+- 未検証のまま: macOS全般(署名・公証・.dmgの実機動作)、Google Playへの.aabアップロード、Linuxのトレイ/画面/自動起動(WSLにはデスクトップが無い)、実機のLinux。
+- Verified: release asset hashes match; .aab passes `jarsigner -verify` and shares the APK's signing cert; AppImage and `.deb` pass `--selftest` under WSL2 (Ubuntu 24.04, not a real Linux desktop). Found: the AppImage bundles no libraries and needs libgtk-3-0, libxdo3, libayatana-appindicator3-1 and espeak-ng installed. Still unverified: everything on macOS, Play upload of the .aab, Linux tray/GUI/autostart.
