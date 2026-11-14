@@ -220,7 +220,7 @@ impl SpeechText {
     /// 音程は文節ごとに少しずつ上下させ、「！」「？」で終わる文節は語尾を上げてゆっくり、「。」で終わる文節は少し下げる。
     /// 低い男性の声には使わない(呼び出し側で声質を見る)。短い区切り(8文字未満)はそのまま。
     pub fn intonate(segments: Vec<Segment>) -> Vec<Segment> {
-        const BOUNCE: [f64; 4] = [1.00, 1.05, 0.98, 1.06];
+        const BOUNCE: [f64; 4] = [1.00, 1.03, 0.99, 1.03];
         let mut out = Vec::new();
         for s in segments {
             let clauses = split_clauses(&s.text);
@@ -234,10 +234,10 @@ impl SpeechText {
                 let mut rate = s.rate;
                 match c.chars().last() {
                     Some('！') | Some('!') | Some('？') | Some('?') | Some('؟') => {
-                        pitch *= 1.06;
+                        pitch *= 1.04;
                         rate *= 0.95;
                     }
-                    Some('。') | Some('.') => pitch *= 0.97,
+                    Some('。') | Some('.') => pitch *= 0.98,
                     _ => {}
                 }
                 let gap = if i == last {
