@@ -129,3 +129,17 @@
 - **WASM по-прежнему остаётся технологией для интерфейса.** Изменилось лишь то, что вызываемый им API теперь построен на Connect.
 - Интерфейсы, форма которых задана внешним стандартом (ACME, обратные вызовы OAuth, вебхуки сторонних сервисов, проверки работоспособности, статические файлы, OTLP), остаются обычным HTTP.
 - **Если есть сомнения — выбирайте Connect.**
+
+### 2026-11-17 追記: v0.5.7の再検証と再開用メッセージ / Re-verification and resume message
+
+**日本語**
+- 確認済み: 添付7ファイルのSHA-256が`SHA256SUMS*.txt`と一致。APK(署名方式v2)と`.aab`は同一の署名証明書(`CN=maid-cafe-se, O=aon-co-jp`、SHA-256 `104cd63b…ea12af`、自己署名)。AppImageをWSL(Ubuntu)で起動し、ローカルWeb UI(127.0.0.1)がHTTP 200。リリース本文は、添付一覧・確認済み・未検証の3区分に書き換え済み。
+- 未検証のまま: Macの署名・公証(リポジトリにAppleのシークレットが未登録で、CIの署名処理は一度も実行されていない)、macOS実機、実デスクトップのLinux(トレイ・音声)、Windowsインストーラーの通し試験、.aabのGoogle Playアップロード。
+- 落とし穴: `.github/workflows/desktop.yml`(125行目付近)が、新しいタグごとにリリース本文を旧い自動生成文(「未署名・実機での動作は未確認」)で作る。次のタグを打つ前に、同じ3区分の文へ直す。`Cargo.lock`に未コミットの差分があるが本件とは無関係(盲目的にコミットしない)。
+- **再開用メッセージ(別アカウントへ貼り付け)**: 「`F:\maid-cafe-se`(aon-co-jp/maid-cafe-se)と`F:\runo`で再開。v0.5.7のリリース本文は更新済み。残り: (1)`desktop.yml`のリリース本文の自動生成文を直す、(2)Mac署名は`APPLE_ID`・`APPLE_TEAM_ID`・`APPLE_APP_PASSWORD`をリポジトリのシークレットに登録(値は本人が`F:\`直下のtxt経由で渡す。画面に出さない)してからタグを打って検証、(3)実Linuxデスクトップ・Windowsインストーラー・Play uploadの確認。チャットは日本語のみ。」
+
+**English**
+- Verified: the SHA-256 of all 7 attached files matches `SHA256SUMS*.txt`. The APK (signature scheme v2) and the `.aab` share one self-signed certificate (`CN=maid-cafe-se, O=aon-co-jp`, SHA-256 `104cd63b…ea12af`). The AppImage launched under WSL (Ubuntu) and its local web UI (127.0.0.1) returned HTTP 200. The release notes were rewritten into attachments / verified / unverified sections.
+- Still unverified: Mac signing and notarization (no Apple secrets are registered in the repository, so the CI signing step has never run), real macOS, a real Linux desktop (tray, voice), an end-to-end Windows installer test, and a Google Play upload of the `.aab`.
+- Pitfalls: `.github/workflows/desktop.yml` (around line 125) creates the release notes with the old auto-generated text ("unsigned, not verified on real devices") for every new tag; fix it to the same three-part text before tagging again. `Cargo.lock` has an uncommitted diff unrelated to this work (do not commit it blindly).
+- **Resume message (paste into the other account)**: "Resume in `F:\maid-cafe-se` (aon-co-jp/maid-cafe-se) and `F:\runo`. The v0.5.7 release notes are updated. Open: (1) fix the auto-generated release-notes text in `desktop.yml`; (2) for Mac signing, register `APPLE_ID`, `APPLE_TEAM_ID` and `APPLE_APP_PASSWORD` as repository secrets (the owner supplies them via a txt file at the root of `F:\`; never print them), then tag and verify; (3) check a real Linux desktop, the Windows installer and the Play upload. Chat in Japanese only."
